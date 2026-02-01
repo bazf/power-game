@@ -74,3 +74,35 @@ export const SHIELD_MATERIALS = [
 
 export const DEFAULT_SLOTS = new Array(5).fill(null);
 export const SLOT_IDS = ["slot-0", "slot-1", "slot-2", "slot-3", "slot-4"];
+
+// Game configuration
+export const GAME_CONFIG = {
+    // Demand targets
+    BASE_DEMAND_MW: 2000,
+    PEAK_DEMAND_MW: 3000,
+
+    // Win conditions
+    MIN_RELIABILITY: 70,
+    MAX_EMISSIONS: 400,
+    MIN_COVERAGE: 100,
+
+    // Failure thresholds
+    BLACKOUT_THRESHOLD: 0.8,
+    BLACKOUT_WARNING_SEC: 10,
+    MELTDOWN_TEMP: 800,
+
+    // Scoring
+    POINTS_PER_SECOND_STABLE: 1,
+    BONUS_LOW_EMISSIONS: 100,
+    BONUS_HIGH_RELIABILITY: 50,
+    PENALTY_BLACKOUT: -200,
+    PENALTY_MELTDOWN: -500,
+};
+
+// Predictable 24-hour demand curve (multiplier of BASE_DEMAND_MW)
+export const DEMAND_CURVE = [
+    0.6, 0.55, 0.5, 0.5, 0.55, 0.7,     // 00:00-05:00 (night)
+    0.85, 1, 0.95, 0.9, 0.85, 0.9,      // 06:00-11:00 (morning peak)
+    0.85, 0.8, 0.85, 0.9, 1, 0.95,      // 12:00-17:00 (afternoon)
+    0.9, 0.85, 0.8, 0.75, 0.7, 0.65,    // 18:00-23:00 (evening)
+];

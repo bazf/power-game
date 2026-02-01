@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { motion } from "framer-motion";
+import { CSS } from "@dnd-kit/utilities";
 import PropTypes from "prop-types";
 
 export default function EnergyCard({ source }) {
@@ -9,31 +9,34 @@ export default function EnergyCard({ source }) {
     });
 
     const style = {
-        transform: transform
-            ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-            : undefined,
+        transform: CSS.Translate.toString(transform),
+        touchAction: "none",
+        cursor: isDragging ? "grabbing" : "grab",
     };
 
     return (
-        <motion.div
+        <div
             ref={setNodeRef}
             style={style}
             {...listeners}
             {...attributes}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-card transition ${isDragging ? "opacity-60" : "opacity-100"
-                }`}
+            className={`select-none rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-card
+                transition-all duration-150 ease-out
+                hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]
+                ${isDragging ? "opacity-60 shadow-xl z-50" : "opacity-100"}`}
         >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
                 <h3 className="text-lg font-semibold">{source.name}</h3>
                 <span
-                    className="h-3 w-3 rounded-full"
+                    className="h-3 w-3 shrink-0 rounded-full"
                     style={{ backgroundColor: source.color }}
                 />
             </div>
-            <p className="text-xs text-slate-500">CO₂: {source.co2Emissions} кг/МВт·год</p>
-        </motion.div>
+            <p className="text-xs text-slate-500">
+                {source.capacity} МВт · {source.reliability}%
+            </p>
+            <p className="text-[10px] text-slate-400">CO₂: {source.co2Emissions} кг/МВт·год</p>
+        </div>
     );
 }
 
@@ -42,6 +45,8 @@ EnergyCard.propTypes = {
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         co2Emissions: PropTypes.number.isRequired,
+        capacity: PropTypes.number.isRequired,
+        reliability: PropTypes.number.isRequired,
         color: PropTypes.string.isRequired,
     }).isRequired,
 };

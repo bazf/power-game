@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ControlSlider({ label, value, onChange, accent }) {
     const trackRef = useRef(null);
@@ -22,23 +22,34 @@ export default function ControlSlider({ label, value, onChange, accent }) {
 
     const onPointerDown = (event) => {
         event.preventDefault();
+        event.stopPropagation();
         setIsDragging(true);
         setFromClientY(event.clientY);
-        event.currentTarget.setPointerCapture?.(event.pointerId);
     };
 
-    const onPointerMove = (event) => {
+    // Use document-level events for reliable drag tracking
+    useEffect(() => {
         if (!isDragging) return;
-        event.preventDefault();
-        setFromClientY(event.clientY);
-    };
 
-    const onPointerUp = (event) => {
-        if (!isDragging) return;
-        event.preventDefault();
-        setIsDragging(false);
-        event.currentTarget.releasePointerCapture?.(event.pointerId);
-    };
+        const handleMove = (event) => {
+            event.preventDefault();
+            setFromClientY(event.clientY);
+        };
+
+        const handleUp = () => {
+            setIsDragging(false);
+        };
+
+        document.addEventListener("pointermove", handleMove);
+        document.addEventListener("pointerup", handleUp);
+        document.addEventListener("pointercancel", handleUp);
+
+        return () => {
+            document.removeEventListener("pointermove", handleMove);
+            document.removeEventListener("pointerup", handleUp);
+            document.removeEventListener("pointercancel", handleUp);
+        };
+    }, [isDragging, setFromClientY]);
 
     const fillPercent = value;
 
@@ -49,12 +60,10 @@ export default function ControlSlider({ label, value, onChange, accent }) {
                 <div
                     ref={trackRef}
                     onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    onPointerCancel={onPointerUp}
                     className="relative h-52 w-10 cursor-pointer rounded-full bg-slate-200"
                     style={{ touchAction: "none" }}
                 >
+                    {/* Hidden input for accessibility only - no pointer events */}
                     <input
                         type="range"
                         min={0}
@@ -62,10 +71,11 @@ export default function ControlSlider({ label, value, onChange, accent }) {
                         value={value}
                         onChange={(event) => onChange(clamp(Number(event.target.value)))}
                         aria-label={label}
-                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        tabIndex={-1}
+                        className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
                     />
                     <div
-                        className="absolute bottom-0 left-0 right-0 rounded-full"
+                        className="pointer-events-none absolute bottom-0 left-0 right-0 rounded-full"
                         style={{
                             height: `${fillPercent}%`,
                             backgroundColor: accent ?? "#1E3A8A",
@@ -73,7 +83,7 @@ export default function ControlSlider({ label, value, onChange, accent }) {
                         }}
                     />
                     <div
-                        className="absolute left-1/2 h-8 w-8 -translate-x-1/2 rounded-full border border-slate-200 bg-white shadow"
+                        className="pointer-events-none absolute left-1/2 h-8 w-8 -translate-x-1/2 rounded-full border border-slate-200 bg-white shadow"
                         style={{
                             bottom: `calc(${fillPercent}% - 16px)`,
                             boxShadow: isDragging
